@@ -1,4 +1,6 @@
-﻿namespace CardComboCalculator.Core
+﻿using Combinatorics.Collections;
+
+namespace CardComboCalculator.Core
 {
     public static class Calculator
     {
@@ -24,7 +26,9 @@
             var goodCardsInDeck = deck.Where(goodCards.Contains).ToList();
             var numberOfBadCardsInDeck = deck.Length - goodCardsInDeck.Count;
 
-            var allGoodHandCombinations = Combinations(goodCardsInDeck, handSize).Where(hand => IsHandGood(hand, goodCombinations))
+            var combinations = Combinations(goodCardsInDeck, handSize).ToList();
+
+            var allGoodHandCombinations = combinations.Where(hand => IsHandGood(hand, goodCombinations))
                 .GroupBy(hand => hand.Count)
                 .ToDictionary(group => group.Key, group => (uint)group.Count());
 
@@ -43,6 +47,7 @@
 
         private static bool IsHandGood<T>(IEnumerable<T> hand, IEnumerable<T[]> goodCombinations)
         {
+            var i = 0;
             foreach (var goodCombination in goodCombinations)
             {
                 if (hand.ContainsAllItems(goodCombination))
@@ -54,16 +59,16 @@
             return false;
         }
 
-        public static IEnumerable<List<T>> Combinations<T>(ICollection<T> source, int maxSize)
+        public static IEnumerable<IReadOnlyList<T>> Combinations<T>(ICollection<T> source, int maxSize)
         {
-            ArgumentNullException.ThrowIfNull(source);
-
-            var data = source;
-
-            return Enumerable
-                .Range(1, (1 << (data.Count)) - 1)
-                .Select(index => data.Where((v, i) => (index & (1 << i)) != 0).ToList())
-                .Where(enumerable => enumerable.Count <= maxSize);
+            for (int i = 1; i <= maxSize; i++)
+            {
+                var c = new Combinations<T>(source, i, GenerateOption.WithoutRepetition);
+                foreach (var combination in c)
+                {
+                    yield return combination;
+                }
+            }
         }
     }
 }
