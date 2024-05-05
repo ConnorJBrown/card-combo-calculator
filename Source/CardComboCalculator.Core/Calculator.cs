@@ -26,9 +26,7 @@ namespace CardComboCalculator.Core
             var goodCardsInDeck = deck.Where(goodCards.Contains).ToList();
             var numberOfBadCardsInDeck = deck.Length - goodCardsInDeck.Count;
 
-            var combinations = Combinations(goodCardsInDeck, handSize).ToList();
-
-            var allGoodHandCombinations = combinations.Where(hand => IsHandGood(hand, goodCombinations))
+            var allGoodHandCombinations = Combinations(goodCardsInDeck, handSize).Where(hand => IsHandGood(hand, goodCombinations))
                 .GroupBy(hand => hand.Count)
                 .ToDictionary(group => group.Key, group => (uint)group.Count());
 
